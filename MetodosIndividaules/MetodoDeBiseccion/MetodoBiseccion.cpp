@@ -11,10 +11,12 @@ bool verificarIntervalo(double a, double b);//prototipo de la funcion verificarI
 
 
 int main(){
+    //Definimos variables.
     double a = 0.0f;
     double b = 0.0f;
     int i = 0;
-    double tol = exp(1e-8);
+    int max_iter = 1000;
+    double tol = 1e-8;
     double error = 0.0f;
     double c = 0.0f;
     double cviejo = 0.0f;
@@ -24,7 +26,7 @@ int main(){
     printf("Ingrese el final del intervalo: ");
     scanf("%lf", &b);
 
-    if(verificarIntervalo(a, b)) {
+    if(verificarIntervalo(a, b)) {//para la verificacion del intervalo llamo a funcion....
         printf("El intervalo es valido.\n");
     }else {
         printf("El intervalo no es valido.\n");
@@ -41,14 +43,13 @@ int main(){
             break; //La raiz es c
         }    
         error = fabs(f(c)); //Error absoluto
-        i++;
+        i++;//aumento contador de iteraciones
         cviejo = c; //Guardamos el valor de c para la siguiente iteracion
-    }while (error > tol);
-    printf("La raiz es: %lf\n", c);
+    }while (error > tol && i < max_iter);
+    printf("La raiz es: %.10lf\n", c);
     printf("Numero de iteraciones: %d\n", i);
-    printf("Error absoluto: %lf\n", error);
-    printf("Valor de c en la ultima iteracion: %lf\n", cviejo);
-    
+    printf("Error absoluto: %.10lf\n", error);
+    printf("Valor de c en la ultima iteracion: %.10lf\n", cviejo);
 
 
     return 0;
@@ -56,7 +57,7 @@ int main(){
 
 //Desarrolo de funciones.
 double f(double x) {
-    return log(x) + exp(sin(x)) - x;
+    return log(x) + exp(sin(x)) - x;//Funcion a probar
 }
 
 bool verificarIntervalo(double a, double b) {
