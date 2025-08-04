@@ -11,7 +11,7 @@ bool verificarIntervalo(double a, double b);//prototipo de la funcion verificarI
 
 
 int main(){
-    //Definimos variables.
+    //Definimos las variables
     double a = 0.0f;
     double b = 0.0f;
     int i = 0;
