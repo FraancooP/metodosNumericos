@@ -11,7 +11,7 @@ int main(){
     double b = 0.0f;
     int i = 0;
     int max_iter = 1000;
-    double tol = 1e-8;
+    double tol = 1e-3;
     double error = 0.0f;
     double c = 0.0f;
     double cviejo = 0.0f;
@@ -30,7 +30,29 @@ int main(){
 
     do{
 
+        c = (a * f(b) - b * f(a)) /(f(b) - f(a)); // Regla de falsa posicion
+        //IMPORTANTE: El inicio del intervalo no debe 0!, ya que debido a esto
+        //la funcion f(x) no se puede evaluar en ese punto(por el logaritmo).
+    	if(f(a) * f(c) > 0){
+    		a = c;
+    	}else if(f(a) * f(c) < 0){
+    		b = c;
+    	}else{
+    		printf("La raiz esta en: %lf\n", c);
+    		break;
+    		
+    	}
+    	error = fabs(f(c));
+    	i++;
+    	cviejo = c;
+
     }while(error > tol && i < max_iter);
+     printf("La raiz es: %.10lf\n", c);
+    printf("Numero de iteraciones: %d\n", i);
+    printf("Error absoluto: %.10lf\n", error);
+    printf("Valor de c en la ultima iteracion: %.10lf\n", cviejo);
+
+
 
     return 0;
 }
