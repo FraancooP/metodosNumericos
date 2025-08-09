@@ -4,6 +4,11 @@ Para los casos de los metodos de biseccion en ambas raices, las iteraciones tota
 Esto se debe a porque esta cayendo justo en la raiz al momento de calcular c.
 En cambio, para el metodo de reghula falsi, no cae exactamente en la raiz debido a la formula
 lineal que se usa al calcular c.
+Para poder ver esto mejor a fondo, vamos a exportar los datos calculados en cada metodo y guardarlos
+en un archivo, luego, utilizare estos datos para realizar un grafico comparativo.
+COMO USAR: Cuando se ejecute el programa se van a crear 4 archivos .csv, los cuales contendran
+los datos de cada metodo y cada raiz. una vez conseguidos estos datos, moverlos a la carpeta GraficadoPy y ejecutar el
+archivo .bat
 */
 
 
@@ -11,6 +16,9 @@ lineal que se usa al calcular c.
 #include <cmath>
 #include <stdio.h>
 #include <stack>
+#include <fstream>
+#include <vector>
+#include <string>
 
 using namespace std;
 
@@ -18,8 +26,10 @@ using namespace std;
 double f(double x);
 bool verificarIntervalo(double a, double b);
 
-void metodoBiseccion(double a, double b, stack<int>& iteraciones, stack<double>& raiz);
-void metodoRegulaFalsi(double a, double b, stack<int>& iteraciones, stack<double>& raiz);
+void metodoBiseccion(double a, double b, stack<int>& iteraciones, stack<double>& raiz, string nombreArchivo);
+void metodoRegulaFalsi(double a, double b, stack<int>& iteraciones, stack<double>& raiz, string nombreArchivo);
+void exportarDatos(string metodo, vector<int>& iteraciones, vector<double>& errores_abs, 
+                   vector<double>& errores_rel, vector<double>& errores_func);
 int main() {
 	double a, b = 0.0;
     //Declaro pilas para guardar iteraciones y valor de la raiz.
@@ -33,13 +43,13 @@ int main() {
 	printf("Aplicando metodo de biseccion y regula falsi para la primera raiz.\n");
 	a = -1.5;
 	b = -0.5;
-	metodoBiseccion(a ,b ,iteraciones, valor_raiz);
-	metodoRegulaFalsi(a, b, iteraciones, valor_raiz);
+	metodoBiseccion(a, b, iteraciones, valor_raiz, "biseccion_raiz1.csv");
+	metodoRegulaFalsi(a, b, iteraciones, valor_raiz, "regla_falsi_raiz1.csv");
 	printf("Aplicando metodo de biseccion y regula falsi para la segunda raiz.\n");
 	a = 0.5;
 	b = 1.5;
-	metodoBiseccion(a, b, iteraciones, valor_raiz);
-	metodoRegulaFalsi(a, b, iteraciones, valor_raiz);
+	metodoBiseccion(a, b, iteraciones, valor_raiz, "biseccion_raiz2.csv");
+	metodoRegulaFalsi(a, b, iteraciones, valor_raiz, "regla_falsi_raiz2.csv");
 	printf("===============Resultados finales===============\n");
     printf("Metodo: \t NroRaiz: \t RaizAproximada \t IteracionesTotales\n");
 	printf("RegulaFalsi\t  2da\t\t %.10lf\t\t %d\n",valor_raiz.top(),iteraciones.top());
@@ -71,12 +81,16 @@ bool verificarIntervalo(double a, double b){
 	}
 }
 
-void metodoBiseccion(double a, double b, stack<int>& iteraciones, stack<double>& raiz){
+void metodoBiseccion(double a, double b, stack<int>& iteraciones, stack<double>& raiz, string nombreArchivo){
 		double c, cviejo = 0.0;
 		double error_funcion, error_absoluto, error_relativo, error_porcentual, error_intervalo;
 	    int i = 0;
 	    int max_iter = 1000;
 	    double tol = 1e-5;
+	    
+	    // Vectores para almacenar datos para exportar
+	    vector<int> iter_datos;
+	    vector<double> error_abs_datos, error_rel_datos, error_func_datos;
 
 	    if(verificarIntervalo(a, b)) {//para la verificacion del intervalo llamo a funcion....
 	        printf("El intervalo es valido.\n");
@@ -106,6 +120,13 @@ void metodoBiseccion(double a, double b, stack<int>& iteraciones, stack<double>&
 
 
 	        printf("%d\t%.10f\t%.10f\t%.10f\t%.10f\t%.10f\t%.10f\t\t%.10f\n", i, a, b, c, f(c), error_absoluto, error_porcentual, error_intervalo);
+	        
+	        // Guardar datos para exportar
+	        iter_datos.push_back(i);
+	        error_abs_datos.push_back(error_absoluto);
+	        error_rel_datos.push_back(error_relativo);
+	        error_func_datos.push_back(error_funcion);
+	        
 	        if (f(a)*f(c) > 0){
 	            a = c; //La raiz esta en el intervalo [c, b]
 	        }else if(f(a)*f(c) < 0){
@@ -128,15 +149,23 @@ void metodoBiseccion(double a, double b, stack<int>& iteraciones, stack<double>&
 	    	printf("Tolerancia utilizada: %.10lf\n", tol);
 	    	iteraciones.push(i);
 	    	raiz.push(c);
+	    	
+	    	// Exportar datos a archivo CSV
+	    	exportarDatos(nombreArchivo, iter_datos, error_abs_datos, error_rel_datos, error_func_datos);
+	    	
 	    	system("pause");
 	    	printf("Precione una tecla para continuar...\n");
 }
-void metodoRegulaFalsi(double a, double b, stack<int>& iteraciones, stack<double>& raiz){
+void metodoRegulaFalsi(double a, double b, stack<int>& iteraciones, stack<double>& raiz, string nombreArchivo){
 	double c, cviejo = 0.0;
 	    double error_funcion, error_absoluto, error_relativo, error_porcentual, error_intervalo;
 	    int i = 0;
 	    int max_iter = 1000;
 	    double tol = 1e-5;
+	    
+	    // Vectores para almacenar datos para exportar
+	    vector<int> iter_datos;
+	    vector<double> error_abs_datos, error_rel_datos, error_func_datos;
 	    printf("Aplicando metodo de Regla Falsi con tolerancia de %.10lf\n", tol);
 
 	    if(verificarIntervalo(a, b)) { // Verificacion del intervalo
@@ -174,6 +203,12 @@ void metodoRegulaFalsi(double a, double b, stack<int>& iteraciones, stack<double
 	        printf("%d\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.4f\t\t%.6f\n",
 	               i, a, b, c, f(c), error_absoluto, error_porcentual, error_intervalo);
 
+	        // Guardar datos para exportar
+	        iter_datos.push_back(i);
+	        error_abs_datos.push_back(error_absoluto);
+	        error_rel_datos.push_back(error_relativo);
+	        error_func_datos.push_back(error_funcion);
+
 	        //IMPORTANTE: El inicio del intervalo no debe ser 0!, ya que debido a esto
 	        //la funcion f(x) no se puede evaluar en ese punto(por el logaritmo).
 	    	if(f(a) * f(c) > 0){
@@ -201,7 +236,37 @@ void metodoRegulaFalsi(double a, double b, stack<int>& iteraciones, stack<double
 	    printf("Tolerancia utilizada: %.10lf\n", tol);
 	    iteraciones.push(i);
 	    raiz.push(c);
+	    
+	    // Exportar datos a archivo CSV
+	    exportarDatos(nombreArchivo, iter_datos, error_abs_datos, error_rel_datos, error_func_datos);
+	    
 	    system("pause");
 	    printf("Presione una tecla para continuar...\n");
 
+}
+
+// Función para exportar datos a archivo CSV
+void exportarDatos(string metodo, vector<int>& iteraciones, vector<double>& errores_abs, 
+                   vector<double>& errores_rel, vector<double>& errores_func) {
+    ofstream archivo(metodo);
+    
+    if(!archivo.is_open()) {
+        printf("Error: No se pudo crear el archivo %s\n", metodo.c_str());
+        return;
+    }
+    
+    // Escribir header del CSV
+    archivo << "Iteracion,Error_Absoluto,Error_Relativo,Error_Funcion\n";
+    
+    // Escribir datos
+    for(size_t i = 0; i < iteraciones.size(); i++) {
+        archivo << iteraciones[i] << "," 
+                << errores_abs[i] << "," 
+                << errores_rel[i] << "," 
+                << errores_func[i] << "\n";
+    }
+    
+    archivo.close();
+    printf("✓ Datos exportados a: %s\n", metodo.c_str());
+    printf("  - Total de iteraciones guardadas: %zu\n", iteraciones.size());
 }
