@@ -3,7 +3,6 @@
 
 // Definir la función f(x)
 double f(double x) {
-    // Ejemplo: f(x) = x^3 - x - 2
     return pow(x, 3) - x - 2;
 }
 
