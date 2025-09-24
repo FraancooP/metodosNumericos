@@ -1,5 +1,5 @@
-#include "../../Funciones/gauss_seidel.h"
-#include "../../Funciones/jacobi.h"
+#include "../../Funciones/gauss_seidel_resuido.h"
+#include "../../Funciones/jacobi_resuido.h"
 #include <stdio.h>
 #include <math.h>
 #include <iostream>
@@ -12,7 +12,7 @@ int main() {
     int n;
 
     printf("Metodo de Jacobi:\n");
-    n = jacobi("matriz_problema22.dat", x, error, &iter, tol, max_iter);
+    n = jacobi_resuido("matriz_problema21.dat", x, error, &iter, tol, max_iter);
     printf("\nSolucion aproximada:\n");
     for (int i = 0; i < n; i++)
         printf("x[%d] = %.10f\n", i+1, x[i]);
@@ -21,7 +21,7 @@ int main() {
     printf("Metodo de Gauss-Seidel:\n");
     x[20], error[1000];
     iter = 0;
-    n = gauss_seidel("matriz_problema22.dat", x, error, &iter, tol, max_iter);
+    n = gauss_seidel_resuido("matriz_problema21.dat", x, error, &iter, tol, max_iter);
     printf("\nSolucion aproximada:\n");
     for (int i = 0; i < n; i++)
         printf("x[%d] = %.10f\n", i+1, x[i]);

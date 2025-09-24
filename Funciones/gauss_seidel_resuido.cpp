@@ -1,13 +1,11 @@
 #include <stdio.h>
-#include <math.h>
 #include <stdlib.h>
-#include "jacobi.h"
+#include <math.h>
+#include "gauss_seidel_resuido.h"
 
-int jacobi(const char* filename, double x[], double error[], int* iter, double tol, int max_iter)
-{
+int gauss_seidel_resuido(const char* filename, double x[], double error[], int* iter, double tol, int max_iter) {
     FILE *fp = fopen(filename, "r");
-    if (fp == NULL)
-    {
+    if (fp == NULL) {
         puts("No se puede abrir el archivo");
         exit(1);
     }
@@ -31,7 +29,6 @@ int jacobi(const char* filename, double x[], double error[], int* iter, double t
         fscanf(fp, "%lf", &x0[i]);
 
     fclose(fp);
-
     printf("La matriz cargada desde el archivo es: \n");
     printf("\nMatriz aumentada (A | b):\n");
     for (int i = 0; i < n; i++)
@@ -40,14 +37,13 @@ int jacobi(const char* filename, double x[], double error[], int* iter, double t
             printf("%10.4f ", A[i][j]);
         printf("| %10.4f\n", b[i]);
     }
-    system("pause");
-    printf("Presione una tecla para continuar...\n");
-
     printf("\nVector inicial x0:\n");
     for (int i = 0; i < n; i++)
         printf("x0[%d] = %.10f\n", i+1, x0[i]);
     printf("\n");
-
+    // Inicializar x con x0
+    for (int i = 0; i < n; i++)
+        x[i] = x0[i];
     // Chequeo de diagonal dominante
     int esDominante = 1;
     for (int i = 0; i < n; i++) {
@@ -63,41 +59,55 @@ int jacobi(const char* filename, double x[], double error[], int* iter, double t
     }
     if (!esDominante) {
         printf("ADVERTENCIA: La matriz NO es diagonalmente dominante. El método puede no converger.\n");
-        system("pause");
-        printf("Presione una tecla para continuar...\n");
+        
     }
+    system("pause");
+    printf("Presione una tecla para continuar...\n");
     // Inicializar x con x0
     for (int i = 0; i < n; i++)
         x[i] = x0[i];
 
-    *iter = 0;
-    double err = 0.0;
+    printf("\nIter\t||Ax - b||\n");
 
-    printf("\nIter\tError\n");
+    int iter_local = 0;
+    double error_local;
+
     do {
+        // Guardar x vieja
         for (int i = 0; i < n; i++)
             x_old[i] = x[i];
 
+        // Iteración Gauss-Seidel
         for (int i = 0; i < n; i++) {
             double sum = 0.0;
             for (int j = 0; j < n; j++) {
                 if (j != i)
-                    sum += A[i][j] * x_old[j];
+                    sum += A[i][j] * x[j];
             }
             x[i] = (b[i] - sum) / A[i][i];
         }
 
-        // Calcular el error como la norma infinita
-        err = 0.0;
+        // Calcular residuo r = Ax - b
+        double residuo[n];
         for (int i = 0; i < n; i++) {
-            double e = fabs(x[i] - x_old[i]);
-            if (e > err)
-                err = e;
+            residuo[i] = 0.0;
+            for (int j = 0; j < n; j++)
+                residuo[i] += A[i][j] * x[j];
+            residuo[i] -= b[i];
         }
-        error[*iter] = err;
-        printf("%d\t%.10f\n", *iter+1, err);
-        (*iter)++;
-    } while (err > tol && *iter < max_iter);
+
+        // Norma 2 del residuo
+        error_local = 0.0;
+        for (int i = 0; i < n; i++)
+            error_local += residuo[i] * residuo[i];
+        error_local = sqrt(error_local);
+
+        printf("%d\t%.10f\n", iter_local+1, error_local);
+
+        iter_local++;
+    } while (error_local > tol && iter_local < max_iter);
+
+    *iter = iter_local;
     system("pause");
     printf("Presione una tecla para continuar...\n");
     return n;

@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include "jacobi.h"
+#include "gauss_seidel_relajacion.h"
 
-int jacobi(const char* filename, double x[], double error[], int* iter, double tol, int max_iter)
+int gauss_seidel_relajacion(const char* filename, double x[], double error[], int* iter, double tol, int max_iter, double* lambda)
 {
     FILE *fp = fopen(filename, "r");
     if (fp == NULL)
@@ -40,13 +40,25 @@ int jacobi(const char* filename, double x[], double error[], int* iter, double t
             printf("%10.4f ", A[i][j]);
         printf("| %10.4f\n", b[i]);
     }
-    system("pause");
-    printf("Presione una tecla para continuar...\n");
 
     printf("\nVector inicial x0:\n");
     for (int i = 0; i < n; i++)
         printf("x0[%d] = %.10f\n", i+1, x0[i]);
     printf("\n");
+
+    system("pause");
+    printf("Presione una tecla para continuar...\n");
+    // Inicializar x con x0
+    for (int i = 0; i < n; i++)
+        x[i] = x0[i];
+
+    // Leer lambda si no se pasó desde el main
+    if (lambda == NULL) {
+        static double lambda_local;
+        printf("Ingrese el valor de lambda (relajación, 1 = clásico): ");
+        scanf("%lf", &lambda_local);
+        lambda = &lambda_local;
+    }
 
     // Chequeo de diagonal dominante
     int esDominante = 1;
@@ -66,25 +78,34 @@ int jacobi(const char* filename, double x[], double error[], int* iter, double t
         system("pause");
         printf("Presione una tecla para continuar...\n");
     }
-    // Inicializar x con x0
-    for (int i = 0; i < n; i++)
-        x[i] = x0[i];
+
+    // Normalización de la matriz y el vector
+    for (int i = 0; i < n; i++) {
+        double diag = A[i][i];
+        if (fabs(diag) < 1e-12) {
+            printf("Error: pivote cero o muy pequeño en la fila %d\n", i+1);
+            return 1;
+        }
+        for (int j = 0; j < n; j++)
+            A[i][j] /= diag;
+        b[i] /= diag;
+    }
 
     *iter = 0;
-    double err = 0.0;
-
+    double err;
     printf("\nIter\tError\n");
     do {
         for (int i = 0; i < n; i++)
             x_old[i] = x[i];
 
         for (int i = 0; i < n; i++) {
-            double sum = 0.0;
+            double sum = b[i];
             for (int j = 0; j < n; j++) {
                 if (j != i)
-                    sum += A[i][j] * x_old[j];
+                    sum -= A[i][j] * x[j];
             }
-            x[i] = (b[i] - sum) / A[i][i];
+            // Relajación
+            x[i] = (*lambda) * sum + (1.0 - (*lambda)) * x_old[i];
         }
 
         // Calcular el error como la norma infinita
